@@ -18,5 +18,15 @@ pub enum Error {
         input: String,
         #[source]
         status: tonic::Status
-    }
+    },
+
+    #[error(transparent)]
+    Jwt(#[from] jsonwebtoken::errors::Error),
+
+    #[error("Can not parse variable: {input}")]
+    Var {
+        input: &'static str,
+        #[source]
+        source: std::env::VarError,
+    },
 }

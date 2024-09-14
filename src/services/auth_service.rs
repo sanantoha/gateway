@@ -1,8 +1,6 @@
 use tonic::transport::Channel;
 use crate::error::Error;
 use proto::auth_client::AuthClient;
-// use std::sync::Arc;
-// use std::sync::RwLock;
 
 mod proto {
     tonic::include_proto!("auth");

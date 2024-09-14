@@ -1,12 +1,10 @@
-use actix_web::web::service;
-use actix_web::{get, post, web, HttpResponse, Responder, error};
+use actix_web::{get, post, web, HttpResponse, error};
 use log::{info, error};
 use crate::error::Error;
 use crate::models::auth_models::{IsAdminResponse, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse};
 use crate::services::auth_service::AuthService;
 
 
-#[get("/auth/is_admin/{id}")]
 pub async fn is_admin(service: web::Data<AuthService>, path: web::Path<(String,)>) -> actix_web::Result<HttpResponse> {
     let user_id = path.into_inner().0;
     info!("is_admin request: user_id={}", user_id);
