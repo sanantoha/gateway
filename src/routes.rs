@@ -5,7 +5,7 @@ mod product_routes;
 
 use crate::routes::auth_routes::{is_admin, login, register};
 use crate::middleware::jwt_validator::JwtValidator;
-use crate::routes::product_routes::save_product;
+use crate::routes::product_routes::{get_list_products, save_product};
 
 pub fn init_routes(cfg: &mut web::ServiceConfig, secret: String) {
     cfg.service(
@@ -16,9 +16,10 @@ pub fn init_routes(cfg: &mut web::ServiceConfig, secret: String) {
     .service(login)
     .service(register)
     .service(
-        web::resource("/product")
+        web::resource("/products")
             .wrap(JwtValidator { secret: secret.clone() })
             .route(web::post().to(save_product))
+            .route(web::get().to(get_list_products))
     );
 }
 
