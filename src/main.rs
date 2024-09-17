@@ -8,7 +8,6 @@ mod middleware;
 
 use std::env;
 use actix_web::{web, App, HttpServer};
-use log::info;
 use routes::init_routes;
 use crate::services::auth_service::AuthService;
 use crate::error::Error;

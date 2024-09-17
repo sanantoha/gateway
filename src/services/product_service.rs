@@ -2,7 +2,6 @@ use tonic::transport::Channel;
 use crate::error::Error;
 use proto::product_client::ProductClient;
 use crate::models::auth_models::{ProductRequest, ProductResponse};
-use crate::services::product_service::proto::ProductListResponse;
 
 mod proto {
     tonic::include_proto!("product");

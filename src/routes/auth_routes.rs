@@ -1,7 +1,7 @@
-use actix_web::{get, post, web, HttpResponse, error};
-use log::{info, error};
-use crate::error::Error;
-use crate::models::auth_models::{IsAdminResponse, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse};
+use actix_web::{post, web, HttpResponse};
+use log::info;
+use crate::models::auth_models::{LoginRequest, RegisterRequest};
+use crate::routes::handle_result;
 use crate::services::auth_service::AuthService;
 
 
@@ -9,21 +9,9 @@ pub async fn is_admin(service: web::Data<AuthService>, path: web::Path<(String,)
     let user_id = path.into_inner().0;
     info!("is_admin request: user_id={}", user_id);
 
-    match service.is_admin(&user_id).await {
-        Ok(is_admin) => {      
-            Ok(HttpResponse::Ok().json(IsAdminResponse { 
-                is_admin
-            }))
-        },
-        Err(Error::GrpcStatus { input, status }) => {
-            error!("{}, {}", input, status);
-            Err(error::ErrorInternalServerError(format!("{}, {}", input, status)))
-        },
-        Err(e) => {
-            error!("{}", e);
-            Err(error::ErrorInternalServerError(format!("{}", e)))
-        }
-    }
+    handle_result(service.is_admin(&user_id).await, |_| {
+        info!("is_admin response for user_id: {}", user_id);
+    })
 }
 
 #[post("/auth/login")]
@@ -31,22 +19,9 @@ pub async fn login(service: web::Data<AuthService>, body: web::Json<LoginRequest
     let login_body = body.into_inner();
     info!("login request: {}", login_body.email);
 
-    match service.login(&login_body.email, &login_body.password).await {
-        Ok(token) => {
-            Ok(HttpResponse::Ok().json(LoginResponse {
-                email: login_body.email,
-                token
-            }))
-        },
-        Err(Error::GrpcStatus { input, status }) => {
-            error!("{}, {}", input, status);
-            Err(error::ErrorInternalServerError(format!("{}, {}", input, status)))
-        },
-        Err(e) => {
-            error!("{}", e);
-            Err(error::ErrorInternalServerError(format!("{}", e)))
-        }
-    }
+    handle_result(service.login(&login_body.email, &login_body.password).await, |response|{
+        info!("login successfully for email: {}", response.email);
+    })
 }
 
 #[post("/auth/register")]
@@ -54,19 +29,7 @@ pub async fn register(service: web::Data<AuthService>, body: web::Json<RegisterR
     let login_body = body.into_inner();
     info!("register request: {}", login_body.email);
 
-    match service.register(&login_body.email, &login_body.password).await {
-        Ok(user_id) => {      
-            Ok(HttpResponse::Ok().json(RegisterResponse {
-                user_id,
-            }))
-        },
-        Err(Error::GrpcStatus { input, status }) => {
-            error!("{}, {}", input, status);
-            Err(error::ErrorInternalServerError(format!("{}, {}", input, status)))
-        },
-        Err(e) => {
-            error!("{}", e);
-            Err(error::ErrorInternalServerError(format!("{}", e)))
-        }
-    }
+    handle_result(service.register(&login_body.email, &login_body.password).await, |response| {
+        info!("register successfully for email: {}, user_id: {}", login_body.email, response.user_id);
+    })
 }
