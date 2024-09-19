@@ -13,11 +13,8 @@ pub struct ProductService {
 }
 
 impl ProductService {
-    pub async fn new() -> Result<Self, Error> {
-        // PRODUCT_PORT=55005
-        let channel = Channel::from_static("http://[::1]:55005")
-            .connect()
-            .await?;
+    pub async fn new(product_endpoint: String) -> Result<Self, Error> {
+        let channel = Channel::from_shared(product_endpoint)?.connect().await?;
 
         let client = ProductClient::new(channel);
 

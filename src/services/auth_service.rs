@@ -13,10 +13,8 @@ pub struct AuthService {
 }
 
 impl AuthService {
-    pub async fn new() -> Result<Self, Error> {
-        let channel = Channel::from_static("http://[::1]:50051")
-            .connect()
-            .await?;
+    pub async fn new(auth_endpoint: String) -> Result<Self, Error> {
+        let channel = Channel::from_shared(auth_endpoint)?.connect().await?;
 
         let client = AuthClient::new(channel);
 

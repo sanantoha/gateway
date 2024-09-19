@@ -1,6 +1,5 @@
 //! Main Crate Error
 
-
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
 
@@ -26,4 +25,7 @@ pub enum Error {
         #[source]
         source: std::env::VarError,
     },
+
+    #[error(transparent)]
+    InvalidUrl(#[from] tonic::codegen::http::uri::InvalidUri),
 }
