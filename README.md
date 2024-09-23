@@ -11,3 +11,5 @@ GATEWAY_CORS_ORIGIN=http://localhost:3000
 AUTH_ENDPOINT=http://[::1]:50051
 
 PRODUCT_ENDPOINT=http://[::1]:55005
+
+ORDER_ENDPOINT=http://localhost:55006

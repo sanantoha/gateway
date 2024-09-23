@@ -17,6 +17,7 @@ log = "0.4.22"
 thiserror = "1.0.63"
 jsonwebtoken = "9.3.0"
 futures = "0.3.30"
+itertools = "0.13.0"
 
 
 [build-dependencies]

@@ -1,6 +1,6 @@
 use actix_web::{web, HttpResponse};
 use log::info;
-use crate::models::auth_models::ProductRequest;
+use crate::models::product_models::ProductRequest;
 use crate::routes::handle_result;
 use crate::services::product_service::ProductService;
 

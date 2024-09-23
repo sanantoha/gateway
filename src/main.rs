@@ -13,6 +13,7 @@ use crate::services::auth_service::AuthService;
 use crate::error::Error;
 use crate::services::product_service::ProductService;
 use actix_cors::Cors;
+use crate::services::order_service::OrderService;
 
 const SECRET_NAME: &str = "AUTH_SECRET";
 
@@ -23,6 +24,8 @@ const GATEWAY_CORS_ORIGIN: &str = "GATEWAY_CORS_ORIGIN";
 const AUTH_ENDPOINT: &str = "AUTH_ENDPOINT";
 
 const PRODUCT_ENDPOINT: &str = "PRODUCT_ENDPOINT";
+
+const ORDER_ENDPOINT: &str = "ORDER_ENDPOINT";
 
 #[actix_web::main]
 async fn main() -> Result<(), Error> {
@@ -45,9 +48,14 @@ async fn main() -> Result<(), Error> {
     let product_endpoint = env::var(PRODUCT_ENDPOINT)
         .map_err(|e| Error::Var { input: PRODUCT_ENDPOINT, source: e })?;
 
+    let order_endpoint = env::var(ORDER_ENDPOINT)
+        .map_err(|e| Error::Var { input: ORDER_ENDPOINT, source: e })?;
+
     let auth_service = AuthService::new(auth_endpoint).await?;
 
     let product_service = ProductService::new(product_endpoint).await?;
+
+    let order_service = OrderService::new(order_endpoint).await?;
 
     HttpServer::new(move || {
         App::new()
@@ -58,6 +66,7 @@ async fn main() -> Result<(), Error> {
                     .allow_any_header())
             .app_data(web::Data::new(auth_service.clone()))
             .app_data(web::Data::new(product_service.clone()))
+            .app_data(web::Data::new(order_service.clone()))
             .configure(|cfg| init_routes(cfg, secret.clone()))
     })
     .bind(addrs)?

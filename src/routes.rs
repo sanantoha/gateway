@@ -5,9 +5,11 @@ use serde::Serialize;
 
 pub mod auth_routes;
 mod product_routes;
+mod order_routes;
 
 use crate::middleware::jwt_validator::JwtValidator;
 use crate::routes::auth_routes::{is_admin, login, register};
+use crate::routes::order_routes::place_order;
 use crate::routes::product_routes::{get_list_products, save_product};
 
 pub fn init_routes(cfg: &mut web::ServiceConfig, secret: String) {
@@ -23,6 +25,10 @@ pub fn init_routes(cfg: &mut web::ServiceConfig, secret: String) {
             .wrap(JwtValidator { secret: secret.clone() })
             .route(web::post().to(save_product))
             .route(web::get().to(get_list_products))
+    ).service(
+        web::resource("/orders")
+            .wrap(JwtValidator { secret: secret.clone() })
+            .route(web::post().to(place_order))
     );
 }
 
