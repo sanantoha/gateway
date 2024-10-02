@@ -28,4 +28,7 @@ pub enum Error {
 
     #[error(transparent)]
     InvalidUrl(#[from] tonic::codegen::http::uri::InvalidUri),
+
+    #[error("toml file read error occurred: {0}")]
+    InfluxdbHttpRequest(#[from] reqwest::Error),
 }

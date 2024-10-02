@@ -1,9 +1,8 @@
-use actix_web::{post, web, HttpResponse};
+use actix_web::{web, HttpResponse};
 use log::info;
 use crate::models::auth_models::{LoginRequest, RegisterRequest};
 use crate::routes::handle_result;
 use crate::services::auth_service::AuthService;
-
 
 pub async fn is_admin(service: web::Data<AuthService>, path: web::Path<(String,)>) -> actix_web::Result<HttpResponse> {
     let user_id = path.into_inner().0;
@@ -14,7 +13,6 @@ pub async fn is_admin(service: web::Data<AuthService>, path: web::Path<(String,)
     })
 }
 
-#[post("/auth/login")]
 pub async fn login(service: web::Data<AuthService>, body: web::Json<LoginRequest>) -> actix_web::Result<HttpResponse> {
     let login_body = body.into_inner();
     info!("login request: {}", login_body.email);
@@ -24,7 +22,6 @@ pub async fn login(service: web::Data<AuthService>, body: web::Json<LoginRequest
     })
 }
 
-#[post("/auth/register")]
 pub async fn register(service: web::Data<AuthService>, body: web::Json<RegisterRequest>) -> actix_web::Result<HttpResponse> {
     let login_body = body.into_inner();
     info!("register request: {}", login_body.email);

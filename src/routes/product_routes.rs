@@ -15,6 +15,7 @@ pub async fn save_product(service: web::Data<ProductService>, body: web::Json<Pr
 
 pub async fn get_list_products(service: web::Data<ProductService>) -> actix_web::Result<HttpResponse> {
     info!("get_list_products request");
+
     handle_result(service.get_product_list().await, |products| {
         info!("get_list_products response, products: {}", products.len());
     })

@@ -12,6 +12,12 @@ pub struct JwtValidator {
     pub secret: String,
 }
 
+impl JwtValidator {
+    pub fn new(secret: String) -> Self {
+        JwtValidator { secret }
+    }
+}
+
 // Implement `Transform` for middleware
 impl<S, B> Transform<S, ServiceRequest> for JwtValidator
 where
