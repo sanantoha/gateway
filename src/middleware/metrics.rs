@@ -1,12 +1,12 @@
 use actix_service::{Service, Transform};
 use actix_web::dev::{ServiceRequest, ServiceResponse};
+use actix_web::Error;
 use futures::future::{ok, LocalBoxFuture, Ready};
+use log::{error, info};
 use reqwest::Client;
 use std::sync::Arc;
 use std::task::{Context, Poll};
 use std::time::Instant;
-use log::{error, info};
-use actix_web::Error;
 
 pub struct MetricsMiddleware {
     pub influxdb_client: Arc<Client>,
@@ -78,8 +78,6 @@ where
     }
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        // Extract the token from the Authorization header
-
         let method = req.method().to_string();
         let path = req.path().to_string();
         let start = Instant::now();
@@ -94,10 +92,16 @@ where
         Box::pin(async move {
             let res = fut.await?;
             let duration = start.elapsed().as_millis();
+            let status_code = res.response().status();
+
+            let mut metric_name = "http_requests_gateway";
+            if status_code.is_server_error() || status_code.is_client_error() {
+                metric_name = "error_metric";
+            }
 
             // Publish metrics to InfluxDB asynchronously (without waiting)
             tokio::spawn(async move {
-                publish_metric(influxdb_client, "http_requests_gateway", &method, &path, &token, &url, &org, &bucket, duration).await;
+                publish_metric(influxdb_client, metric_name, &method, &path, &token, &url, &org, &bucket, status_code.as_u16(), duration).await;
             });
 
             Ok(res)
@@ -105,12 +109,12 @@ where
     }
 }
 
-async fn publish_metric(client: Arc<Client>, metric_name: &str, method: &str, path: &str, token: &str, url: &str, org: &str, bucket: &str, duration: u128) {
+pub async fn publish_metric(client: Arc<Client>, metric_name: &str, method: &str, path: &str, token: &str, url: &str, org: &str, bucket: &str, status_code: u16, duration: u128) {
 
-    let data = format!("{},method={},request_path={} response_time={}", metric_name, method, path, duration);
+    let data = format!("{},method={},request_path={},status={} response_time={}", metric_name, method, path, status_code, duration);
     // let data = format!("requests,name={} count=1", method);
 
-    let write_url = format!("{}/api/v2/write?org={}&bucket={}&precision=ns", url, org, bucket);
+    let write_url = format!("{}/api/v2/write?org={}&bucket={}&precision=ms", url, org, bucket);
 
     // Send the request
     let response = client

@@ -826,6 +826,7 @@ dependencies = [
  "env_logger",
  "error-stack",
  "futures",
+ "http 0.2.12",
  "itertools",
  "jsonwebtoken",
  "log",

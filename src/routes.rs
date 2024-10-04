@@ -43,7 +43,9 @@ pub fn init_routes(cfg: &mut web::ServiceConfig, secret: String, influxdb_client
             .wrap(JwtValidator::new(secret.clone()))
             .wrap(MetricsMiddleware::new(influxdb_client.clone(), token.clone(), url.clone(), org.clone(), bucket.clone()))
             .route(web::post().to(place_order))
-    );
+    )
+    .default_service(web::to(HttpResponse::NotFound))
+    ;
 }
 
 pub fn handle_result<T, F>(res: Result<T, Error>, log_f: F) -> actix_web::Result<HttpResponse>
