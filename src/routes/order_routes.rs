@@ -15,3 +15,11 @@ pub async fn place_order(service: web::Data<OrderService>, body: web::Json<Order
         info!("save order success, order_number: {}", order_number);
     })
 }
+
+pub async fn get_order_list(service: web::Data<OrderService>) -> actix_web::Result<HttpResponse> {
+    info!("get_list_orders request");
+
+    handle_result(service.get_order_list().await, |oer| {
+        info!("get order list return {} orders", oer.len());
+    })
+}
