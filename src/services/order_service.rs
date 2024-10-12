@@ -22,7 +22,7 @@ impl OrderService {
     }
 
     pub async fn place_order(&self, order_request: OrderRequest) -> Result<String, Error> {
-        let items: Vec<proto::OrderLinItems> = order_request.items.into_iter().map(|item| proto::OrderLinItems {
+        let items: Vec<proto::OrderLineItems> = order_request.items.into_iter().map(|item| proto::OrderLineItems {
             sku_code: item.sku_code,
             price: item.price,
             quantity: item.quantity,
