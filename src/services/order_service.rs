@@ -69,6 +69,19 @@ impl OrderService {
         Ok(oer)
     }
 
+    pub async fn delete_order(&self, order_id: i64) -> Result<bool, Error> {
+        let request = tonic::Request::new(proto::DeleteOrderRequest { order_id });
+
+        let mut client = self.client.clone();
+
+        let response = client.delete_order(request).await
+            .map_err(|s| Error::GrpcStatus { input: format!("delete order with order_id = {} failed", order_id), status: s})?;
+
+        let is_deleted = response.into_inner().is_deleted;
+
+        Ok(is_deleted)
+    }
+
     fn timestamp_to_datetime(ts: Timestamp) -> Option<DateTime<Utc>> {
         DateTime::from_timestamp(ts.seconds, ts.nanos as u32)
     }

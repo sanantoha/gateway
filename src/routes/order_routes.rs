@@ -23,3 +23,16 @@ pub async fn get_order_list(service: web::Data<OrderService>) -> actix_web::Resu
         info!("get order list return {} orders", oer.len());
     })
 }
+
+pub async fn delete_order(service: web::Data<OrderService>, id: web::Path<i64>) -> actix_web::Result<HttpResponse> {
+    let order_id = id.into_inner();
+    info!("delete_order request order_id = {}", order_id);
+
+    handle_result(service.delete_order(order_id).await, |oer| {
+        let mut deleted_msg = "is deleted";
+        if !oer {
+           deleted_msg = "is not deleted"
+        }
+        info!("order_id = {} {}", order_id, deleted_msg);
+    })
+}
