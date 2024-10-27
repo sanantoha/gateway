@@ -1,7 +1,7 @@
-use tonic::transport::Channel;
 use crate::error::Error;
-use proto::product_client::ProductClient;
 use crate::models::product_models::{ProductRequest, ProductResponse};
+use proto::product_client::ProductClient;
+use tonic::transport::Channel;
 
 mod proto {
     tonic::include_proto!("product");
@@ -57,7 +57,7 @@ impl ProductService {
     }
 
     pub async fn delete_product(&self, product_id: String) -> Result<bool, Error> {
-        let request  = tonic::Request::new(proto::DeleteProductRequest { id: product_id.clone() });
+        let request = tonic::Request::new(proto::DeleteProductRequest { id: product_id.clone() });
 
         let mut client = self.client.clone();
 
