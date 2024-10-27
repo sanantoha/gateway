@@ -56,6 +56,19 @@ impl ProductService {
         Ok(response)
     }
 
+    pub async fn delete_product(&self, product_id: String) -> Result<bool, Error> {
+        let request  = tonic::Request::new(proto::DeleteProductRequest { id: product_id.clone() });
+
+        let mut client = self.client.clone();
+
+        let response = client.delete_product(request).await
+            .map_err(|s| Error::GrpcStatus { input: format!("delete product with product_id = {} failed", product_id), status: s})?;
+
+        let is_deleted = response.into_inner().is_deleted;
+
+        Ok(is_deleted)
+    }
+
     fn map_to_product(product: proto::ProductResponse) -> ProductResponse {
         ProductResponse {
             id: product.id,

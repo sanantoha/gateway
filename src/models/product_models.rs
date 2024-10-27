@@ -16,3 +16,8 @@ pub struct ProductResponse {
     pub currency: String,
     pub price: i64
 }
+
+#[derive(Serialize)]
+pub struct DeleteProductResponse {
+    pub is_deleted: bool
+}

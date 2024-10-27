@@ -26,11 +26,6 @@ pub struct OrderEntityResponse {
     pub items: Vec<OrderLineItems>
 }
 
-#[derive(Debug, Deserialize)]
-pub struct DeleteOrderRequest {
-    pub order_id: i64
-}
-
 #[derive(Debug, Serialize)]
 pub struct DeleteOrderResponse {
     pub is_deleted: bool

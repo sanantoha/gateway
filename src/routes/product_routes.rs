@@ -20,3 +20,16 @@ pub async fn get_list_products(service: web::Data<ProductService>) -> actix_web:
         info!("get_list_products response, products: {}", products.len());
     })
 }
+
+pub async fn delete_product(service: web::Data<ProductService>, id: web::Path<String>) -> actix_web::Result<HttpResponse> {
+    let product_id = id.into_inner();
+    info!("delete_product request {}", product_id);
+
+    handle_result(service.delete_product(product_id.clone()).await, |is_deleted| {
+        let mut deleted_msg = "is deleted";
+        if !is_deleted {
+            deleted_msg = "is not deleted"
+        }
+        info!("product_id = {} {}", product_id, deleted_msg);
+    })
+}
