@@ -15,6 +15,7 @@ use actix_web::{web, App, HttpServer};
 use reqwest::Client;
 use routes::init_routes;
 use std::env;
+use std::sync::Arc;
 
 const SECRET_NAME: &str = "AUTH_SECRET";
 
@@ -42,14 +43,14 @@ async fn main() -> Result<(), Error> {
     env::set_var("RUST_BACKTRACE", "1");
     env_logger::init();
 
-    let secret = env::var(SECRET_NAME)
-        .map_err(|e| Error::Var { input: SECRET_NAME, source: e })?;
+    let secret = Arc::new(env::var(SECRET_NAME)
+        .map_err(|e| Error::Var { input: SECRET_NAME, source: e })?);
 
     let addrs = env::var(GATEWAY_ADDR)
         .map_err(|e| Error::Var { input: GATEWAY_ADDR, source: e })?;
 
-    let cors_origin = env::var(GATEWAY_CORS_ORIGIN)
-        .map_err(|e| Error::Var { input: GATEWAY_CORS_ORIGIN, source: e })?;
+    let cors_origin = Arc::new(env::var(GATEWAY_CORS_ORIGIN)
+        .map_err(|e| Error::Var { input: GATEWAY_CORS_ORIGIN, source: e })?);
 
     let auth_endpoint = env::var(AUTH_ENDPOINT)
         .map_err(|e| Error::Var { input: AUTH_ENDPOINT, source: e })?;
@@ -60,17 +61,17 @@ async fn main() -> Result<(), Error> {
     let order_endpoint = env::var(ORDER_ENDPOINT)
         .map_err(|e| Error::Var { input: ORDER_ENDPOINT, source: e })?;
 
-    let influxdb_token = env::var(INFLUXDB_TOKEN)
-        .map_err(|e| Error::Var { input: INFLUXDB_TOKEN, source: e })?;
+    let influxdb_token = Arc::new(env::var(INFLUXDB_TOKEN)
+        .map_err(|e| Error::Var { input: INFLUXDB_TOKEN, source: e })?);
 
-    let influxdb_url = env::var(INFLUXDB_URL)
-        .map_err(|e| Error::Var { input: INFLUXDB_URL, source: e })?;
+    let influxdb_url = Arc::new(env::var(INFLUXDB_URL)
+        .map_err(|e| Error::Var { input: INFLUXDB_URL, source: e })?);
 
-    let influxdb_org = env::var(INFLUXDB_ORG)
-        .map_err(|e| Error::Var { input: INFLUXDB_ORG, source: e })?;
+    let influxdb_org = Arc::new(env::var(INFLUXDB_ORG)
+        .map_err(|e| Error::Var { input: INFLUXDB_ORG, source: e })?);
 
-    let influxdb_bucket = env::var(INFLUXDB_BUCKET)
-        .map_err(|e| Error::Var { input: INFLUXDB_BUCKET, source: e })?;
+    let influxdb_bucket = Arc::new(env::var(INFLUXDB_BUCKET)
+        .map_err(|e| Error::Var { input: INFLUXDB_BUCKET, source: e })?);
 
     let auth_service = AuthService::new(auth_endpoint).await?;
 
@@ -78,7 +79,7 @@ async fn main() -> Result<(), Error> {
 
     let order_service = OrderService::new(order_endpoint).await?;
 
-    let client = Client::new();
+    let client = Arc::new(Client::new());
 
     HttpServer::new(move || {
         App::new()
@@ -91,12 +92,12 @@ async fn main() -> Result<(), Error> {
             .app_data(web::Data::new(product_service.clone()))
             .app_data(web::Data::new(order_service.clone()))
             .configure(|cfg| init_routes(cfg,
-                                         secret.clone(),
-                                         client.clone(),
-                                         influxdb_token.clone(),
-                                         influxdb_url.clone(),
-                                         influxdb_org.clone(),
-                                         influxdb_bucket.clone())
+                                         Arc::clone(&secret),
+                                         Arc::clone(&client),
+                                         Arc::clone(&influxdb_token),
+                                         Arc::clone(&influxdb_url),
+                                         Arc::clone(&influxdb_org),
+                                         Arc::clone(&influxdb_bucket))
             )
     })
     .bind(addrs)?

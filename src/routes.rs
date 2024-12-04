@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use crate::error::Error;
 use actix_web::{error, web, HttpResponse};
 use log::error;
@@ -14,47 +15,47 @@ use crate::routes::auth_routes::{is_admin, login, register};
 use crate::routes::order_routes::{delete_order, get_order_list, place_order};
 use crate::routes::product_routes::{delete_product, get_list_products, save_product};
 
-pub fn init_routes(cfg: &mut web::ServiceConfig, secret: String, influxdb_client: Client, token: String, url: String, org: String, bucket: String) {
+pub fn init_routes(cfg: &mut web::ServiceConfig, secret: Arc<String>, influxdb_client: Arc<Client>, token: Arc<String>, url: Arc<String>, org: Arc<String>, bucket: Arc<String>) {
     cfg.service(
         web::resource("/auth/is_admin/{id}")
-            .wrap(JwtValidator::new(secret.clone()))
-            .wrap(MetricsMiddleware::new(influxdb_client.clone(), token.clone(), url.clone(), org.clone(), bucket.clone()))
+            .wrap(JwtValidator::new(Arc::clone(&secret)))
+            .wrap(MetricsMiddleware::new(Arc::clone(&influxdb_client), Arc::clone(&token), Arc::clone(&url), Arc::clone(&org), Arc::clone(&bucket)))
             .route(web::get().to(is_admin))
     )
     .service(
         web::resource("/auth/login")
-            .wrap(MetricsMiddleware::new(influxdb_client.clone(), token.clone(), url.clone(), org.clone(), bucket.clone()))
+            .wrap(MetricsMiddleware::new(Arc::clone(&influxdb_client), Arc::clone(&token), Arc::clone(&url), Arc::clone(&org), Arc::clone(&bucket)))
             .route(web::post().to(login))
     )
     .service(
         web::resource("/auth/register")
-            .wrap(MetricsMiddleware::new(influxdb_client.clone(), token.clone(), url.clone(), org.clone(), bucket.clone()))
+            .wrap(MetricsMiddleware::new(Arc::clone(&influxdb_client), Arc::clone(&token), Arc::clone(&url), Arc::clone(&org), Arc::clone(&bucket)))
             .route(web::post().to(register))
     )
     .service(
         web::resource("/products")
-            .wrap(JwtValidator::new(secret.clone()))
-            .wrap(MetricsMiddleware::new(influxdb_client.clone(), token.clone(), url.clone(), org.clone(), bucket.clone()))
+            .wrap(JwtValidator::new(Arc::clone(&secret)))
+            .wrap(MetricsMiddleware::new(Arc::clone(&influxdb_client), Arc::clone(&token), Arc::clone(&url), Arc::clone(&org), Arc::clone(&bucket)))
             .route(web::post().to(save_product))
             .route(web::get().to(get_list_products))
     )
     .service(
         web::resource("/products/{id}")
-            .wrap(JwtValidator::new(secret.clone()))
-            .wrap(MetricsMiddleware::new(influxdb_client.clone(), token.clone(), url.clone(), org.clone(), bucket.clone()))
+            .wrap(JwtValidator::new(Arc::clone(&secret)))
+            .wrap(MetricsMiddleware::new(Arc::clone(&influxdb_client), Arc::clone(&token), Arc::clone(&url), Arc::clone(&org), Arc::clone(&bucket)))
             .route(web::delete().to(delete_product))
     )
     .service(
         web::resource("/orders")
-            .wrap(JwtValidator::new(secret.clone()))
-            .wrap(MetricsMiddleware::new(influxdb_client.clone(), token.clone(), url.clone(), org.clone(), bucket.clone()))
+            .wrap(JwtValidator::new(Arc::clone(&secret)))
+            .wrap(MetricsMiddleware::new(Arc::clone(&influxdb_client), Arc::clone(&token), Arc::clone(&url), Arc::clone(&org), Arc::clone(&bucket)))
             .route(web::post().to(place_order))
             .route(web::get().to(get_order_list))
     )
     .service(
         web::resource("/orders/{id}")
-            .wrap(JwtValidator::new(secret.clone()))
-            .wrap(MetricsMiddleware::new(influxdb_client.clone(), token.clone(), url.clone(), org.clone(), bucket.clone()))
+            .wrap(JwtValidator::new(Arc::clone(&secret)))
+            .wrap(MetricsMiddleware::new(Arc::clone(&influxdb_client), Arc::clone(&token), Arc::clone(&url), Arc::clone(&org), Arc::clone(&bucket)))
             .route(web::delete().to(delete_order))
     )
     .default_service(web::to(HttpResponse::NotFound))

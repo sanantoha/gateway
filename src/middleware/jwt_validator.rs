@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use crate::error::Error as AppError;
 use actix_service::{Service, Transform};
 use actix_web::{dev::{ServiceRequest, ServiceResponse}, Error};
@@ -9,11 +10,11 @@ use std::task::{Context, Poll};
 
 // Middleware structure
 pub struct JwtValidator {
-    pub secret: String,
+    pub secret: Arc<String>,
 }
 
 impl JwtValidator {
-    pub fn new(secret: String) -> Self {
+    pub fn new(secret: Arc<String>) -> Self {
         JwtValidator { secret }
     }
 }
@@ -34,7 +35,7 @@ where
     fn new_transform(&self, service: S) -> Self::Future {
         ok(JwtValidatorMiddleware {
             service,
-            secret: self.secret.clone(),
+            secret: Arc::clone(&self.secret),
         })
     }
 }
@@ -42,7 +43,7 @@ where
 // Middleware logic
 pub struct JwtValidatorMiddleware<S> {
     service: S,
-    secret: String,
+    secret: Arc<String>,
 }
 
 impl<S, B> Service<ServiceRequest> for JwtValidatorMiddleware<S>
@@ -70,7 +71,7 @@ where
             .map(String::from);
 
         if let Some(token) = token {
-            match validate_jwt(&token, &self.secret) {
+            match validate_jwt(&token, self.secret.as_str()) {
                 Ok(_) => {
                     Box::pin(self.service.call(req))
                 }

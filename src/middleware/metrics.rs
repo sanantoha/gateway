@@ -10,16 +10,16 @@ use std::time::Instant;
 
 pub struct MetricsMiddleware {
     pub influxdb_client: Arc<Client>,
-    pub token: String,
-    pub url: String,
-    pub org: String,
-    pub bucket: String,
+    pub token: Arc<String>,
+    pub url: Arc<String>,
+    pub org: Arc<String>,
+    pub bucket: Arc<String>,
 }
 
 impl MetricsMiddleware {
-    pub fn new(influxdb_client: Client, token: String, url: String, org: String, bucket: String) -> Self {
+    pub fn new(influxdb_client: Arc<Client>, token: Arc<String>, url: Arc<String>, org: Arc<String>, bucket: Arc<String>) -> Self {
         MetricsMiddleware {
-            influxdb_client: Arc::new(influxdb_client),
+            influxdb_client,
             token,
             url,
             org,
@@ -45,10 +45,10 @@ where
         ok(MetricsMiddlewareService {
             service,
             influxdb_client: Arc::clone(&self.influxdb_client),
-            token: self.token.clone(),
-            url: self.url.clone(),
-            org: self.org.clone(),
-            bucket: self.bucket.clone()
+            token: Arc::clone(&self.token),
+            url: Arc::clone(&self.url),
+            org: Arc::clone(&self.org),
+            bucket: Arc::clone(&self.bucket)
         })
     }
 }
@@ -57,10 +57,10 @@ where
 pub struct MetricsMiddlewareService<S> {
     service: S,
     influxdb_client: Arc<Client>,
-    token: String,
-    url: String,
-    org: String,
-    bucket: String,
+    token: Arc<String>,
+    url: Arc<String>,
+    org: Arc<String>,
+    bucket: Arc<String>,
 }
 
 impl<S, B> Service<ServiceRequest> for MetricsMiddlewareService<S>
@@ -82,10 +82,10 @@ where
         let path = req.path().to_string();
         let start = Instant::now();
         let influxdb_client = Arc::clone(&self.influxdb_client);
-        let token = self.token.clone();
-        let org = self.org.clone();
-        let bucket = self.bucket.clone();
-        let url = self.url.clone();
+        let token = Arc::clone(&self.token);
+        let org = Arc::clone(&self.org);
+        let bucket = Arc::clone(&self.bucket);
+        let url = Arc::clone(&self.url);
 
         let fut = self.service.call(req);
 
@@ -101,7 +101,7 @@ where
 
             // Publish metrics to InfluxDB asynchronously (without waiting)
             tokio::spawn(async move {
-                publish_metric(influxdb_client, metric_name, &method, &path, &token, &url, &org, &bucket, status_code.as_u16(), duration).await;
+                publish_metric(influxdb_client, metric_name, &method, &path, token.as_str(), url.as_str(), org.as_str(), bucket.as_str(), status_code.as_u16(), duration).await;
             });
 
             Ok(res)
